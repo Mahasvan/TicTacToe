@@ -2,16 +2,19 @@ import random
 
 
 class TicTacToe:
-    def __init__(self, board_size=3, player_char="x"):
+    def __init__(self, board_size=3, player_char="x", mode="hard"):
         self.board = []
         self.board_size = board_size
-        if player_char == "x":
+        if player_char.lower() == "x":
             self.player_turn = "ｘ"
             self.bot_turn = "ｏ"
         else:
             self.player_turn = "ｏ"
             self.bot_turn = "ｘ"
         self.generate_board(board_size)
+        if mode.lower() not in ["hard", "easy"]:
+            mode = "hard"
+        self.mode = mode
 
     def generate_board(self, board_size):
         """
@@ -116,31 +119,34 @@ class TicTacToe:
         Calculates the best move for the bot.
         """
         plausible_moves = []
+        if self.mode.lower() == "easy":
+            # just return a random move
+            plausible_moves = self.unoccupied_places()
+        else:
+            # calculate the best move for each row
+            for row in range(len(self.board)):
+                if self.check_row_occurrences(row, self.player_turn) == self.board_size - 1:
+                    try:
+                        plausible_moves.append((row, self.board[row].index(None)))
+                    except ValueError:
+                        pass
 
-        # calculate the best move for each row
-        for row in range(len(self.board)):
-            if self.check_row_occurrences(row, self.player_turn) == self.board_size - 1:
-                try:
-                    plausible_moves.append((row, self.board[row].index(None)))
-                except ValueError:
-                    pass
+            # calculate the best move for each column
+            column_moves = []
+            for column in range(self.board_size):
+                if self.check_column_occurrences(column, self.player_turn) == self.board_size - 1:
+                    try:
+                        column_moves.append((self.find_row_of(column, None), column))
+                    except ValueError:
+                        pass
+            plausible_moves.extend([(x, y) for x, y in column_moves if x is not None])
 
-        # calculate the best move for each column
-        column_moves = []
-        for column in range(self.board_size):
-            if self.check_column_occurrences(column, self.player_turn) == self.board_size - 1:
-                try:
-                    column_moves.append((self.find_row_of(column, None), column))
-                except ValueError:
-                    pass
-        plausible_moves.extend([(x, y) for x, y in column_moves if x is not None])
+            # calculate the best move for each diagonal
+            if len(self.check_diag1_occurrences(self.player_turn)) == self.board_size - 1:
+                plausible_moves.extend(self.check_diag1_occurrences(None))
 
-        # calculate the best move for each diagonal
-        if len(self.check_diag1_occurrences(self.player_turn)) == self.board_size - 1:
-            plausible_moves.extend(self.check_diag1_occurrences(None))
-
-        if (self.check_diag2_occurrences(self.player_turn)) == self.board_size - 1:
-            plausible_moves.extend(self.check_diag2_occurrences(None))
+            if len(self.check_diag2_occurrences(self.player_turn)) == self.board_size - 1:
+                plausible_moves.extend(self.check_diag2_occurrences(occurrence=None))
 
         if auto_place:
             plausible_moves = [(x, y) for x, y in plausible_moves if self.check_placement(x, y)]
@@ -150,7 +156,8 @@ class TicTacToe:
                 move = random.choice(plausible_moves)
 
             self.place_piece(self.bot_turn, move[0], move[1])
-        return set(plausible_moves)
+        return plausible_moves  # we dont return unique values (ie. return a set) because if an entry is listed twice,
+        # we want to give more priority to that element in the random choice
 
     def check_win(self, player):
         # check rows
