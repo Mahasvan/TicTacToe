@@ -1,4 +1,6 @@
 import json
+import os
+import pathlib
 import subprocess
 import sys
 
@@ -9,7 +11,12 @@ def clear_screen():
     subprocess.run(["clear||cls"], shell=True)
 
 
-settings = json.load(open("config.json"))
+os.chdir(pathlib.Path(__file__).parent.absolute())  # change directory to the main directory
+
+try:
+    settings = json.load(open("config.json"))
+except FileNotFoundError:
+    settings = {}
 
 clear_screen()
 print("Welcome to the TicTacToe!")
