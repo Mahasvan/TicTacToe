@@ -1,3 +1,4 @@
+import json
 import subprocess
 import sys
 
@@ -8,52 +9,26 @@ def clear_screen():
     subprocess.run(["clear||cls"], shell=True)
 
 
-settings = {
-    "player_char": "x",
-    "grid_size": 3,
-}
-
-
-def change_setting():
-    quit = False
-    while not quit:
-        print()
-        print("Available settings")
-        for key, value in settings.items():
-            print(f"{key} - {value}")
-        print("\n")
-        key_to_change = input("Enter key to change:")
-        if key_to_change in settings:
-            new_value = input(f"Enter new value for {key_to_change}:")
-            settings[key_to_change] = new_value
-        else:
-            print("Invalid key")
-        choice = input("Change another setting? (y/n)")
-        if choice.lower() == "n":
-            quit = True
-        clear_screen()
-
+settings = json.load(open("config.json"))
 
 clear_screen()
 print("Welcome to the TicTacToe!")
 print("You can exit the program at any time by typing 'exit'.")
-print("Input formats accepted: `x,y` where x and y are the row and column of the desired move: 1,2 or 2,3 etc...\n")
+print("Input formats accepted: `x,y` where x and y are the row and column of the desired move: `1,2` or `2,3` etc...\n")
 
-while True:
-    print("[Enter]: Start game\nS. Settings\nQ. Quit")
-    choice = input(">> ")
-
-    if choice.lower() == "s":
-        clear_screen()
-        change_setting()
-    elif choice.lower() == "q":
-        sys.exit()
-    else:  # Start game
-        break
+input("Press enter to start the game...")
 clear_screen()
 
+if not settings.get("mode"):
+    mode = input("Enter the desired difficulty level (easy/hard): ")
+else:
+    mode = settings.get("mode")
+if mode.lower() not in ["easy", "hard"]:
+    print("Invalid input! Defaulting to hard mode.")
+    mode = "hard"
+
 try:
-    tictactoe = algo.TicTacToe(int(settings.get("grid_size", 3)), settings.get("player_char", "x"))
+    tictactoe = algo.TicTacToe(int(settings.get("grid_size", 3)), settings.get("player_char", "X"), mode=mode)
 except ValueError:
     print("Invalid grid size")
     sys.exit()
@@ -86,7 +61,7 @@ while True:
         print(tictactoe.check_game_over())
         break
 
-    tictactoe.calculate_bot_move()
+    tictactoe.calculate_bot_move(auto_place=True)
     tictactoe.print_board()
     if tictactoe.check_game_over():
         print(tictactoe.check_game_over())
