@@ -4,10 +4,10 @@ from pathlib import Path
 import subprocess
 import shutil
 
-import PyInstaller.utils.osx
 
 try:
     import PyInstaller.__main__ as pyi
+    import PyInstaller.utils.osx
 except ImportError:
     print("PyInstaller is not installed. Installing now...")
     subprocess.call([sys.executable, "-m", "pip", "install", "pyinstaller", "--upgrade"])
