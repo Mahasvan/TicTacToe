@@ -60,7 +60,7 @@ elif sys.platform == "darwin":
     try:
         # Build universal2
         pyi.run([
-            "--name", "TicTacToe_macos__universal",
+            "--name", "TicTacToe_macos_universal",
             "--clean",
             "--onefile",
             "--icon", "Images/tictactoe.icns",
